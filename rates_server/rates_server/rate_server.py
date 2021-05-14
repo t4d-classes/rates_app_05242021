@@ -220,19 +220,22 @@ class RateServerError(Exception):
     """ rate server error class """
 
 
-def command_start_server(server_process: Optional[mp.Process]) -> None:
+def command_start_server(server_process: Optional[mp.Process],
+    client_count: Synchronized, host: str, port: int) -> mp.Process:
     """ command start server """
 
     if server_process and server_process.is_alive():
         print("server is already running")
-    elif server_process:
+    else:
+        server_process = mp.Process(target=rate_server, args=(host,port,client_count))
         server_process.start()
         print("server started")
-    else:
-        raise RateServerError("server process cannot be null")
+
+    return server_process
 
 
-def command_stop_server(server_process: Optional[mp.Process]) -> None:
+def command_stop_server(
+    server_process: Optional[mp.Process]) -> Optional[mp.Process]:
     """ command stop server """
 
     if not server_process or not server_process.is_alive():
@@ -240,6 +243,10 @@ def command_stop_server(server_process: Optional[mp.Process]) -> None:
     else:
         server_process.terminate()
         print("server stopped")
+
+    server_process = None
+
+    return server_process
 
 
 def command_server_status(server_process: Optional[mp.Process]) -> None:
@@ -255,6 +262,11 @@ def command_client_count(client_count: int) -> None:
 
     print(f"client count: {client_count}")
 
+def command_exit(server_process: Optional[mp.Process]) -> None:
+    """ clean up resources for exit """
+
+    if server_process and server_process.is_alive():
+        server_process.terminate()
 
 def command_clear_cache() -> None:
     """ command clear cache """
@@ -278,14 +290,13 @@ def main() -> None:
             command = input("> ")
 
             if command == "start":
-                server_process = mp.Process(target=rate_server,
-                                            args=(config["server"]["host"],
-                                                  int(config["server"]["port"]),
-                                                  client_count))
-                command_start_server(server_process)
+                server_process = command_start_server(
+                    server_process,
+                    client_count,
+                    config["server"]["host"],
+                    int(config["server"]["port"]))
             elif command == "stop":
-                command_stop_server(server_process)
-                server_process = None
+                server_process = command_stop_server(server_process)
             elif command == "status":
                 command_server_status(server_process)
             elif command == "count":
@@ -293,13 +304,11 @@ def main() -> None:
             elif command == "clear":
                 command_clear_cache()
             elif command == "exit":
-                if server_process and server_process.is_alive():
-                    server_process.terminate()
+                command_exit(server_process)
                 break
 
     except KeyboardInterrupt:
-        if server_process and server_process.is_alive():
-            server_process.terminate()
+        command_exit(server_process)
 
     sys.exit(0)
 
