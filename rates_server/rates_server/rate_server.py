@@ -124,7 +124,8 @@ class ClientConnectionThread(threading.Thread):
                     "select closingdate, currencysymbol, exchangerate",
                     "from rates",
                     "where closingdate = ? ",
-                    f"and currencysymbol in ({placeholders})"])
+                    f"and currencysymbol in ({placeholders})",
+                    "order by currencysymbol"])
 
                 cached_currency_symbols: set[str] = set()
 
@@ -182,10 +183,8 @@ def rate_server(host: str, port: int, client_count: Synchronized) -> None:
     """rate server"""
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_server:
-
-        socket_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         socket_server.bind((host, port))
-        socket_server.listen(100)
+        socket_server.listen()
 
         while True:
 

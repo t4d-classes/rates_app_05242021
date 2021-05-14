@@ -31,7 +31,6 @@ def main() -> None:
                     client_socket.sendall(command.encode("UTF-8"))
                     print(client_socket.recv(2048).decode("UTF-8"))
 
-            client_socket.close()
     except ConnectionResetError:
         print("Server connection was closed.")
     except ConnectionRefusedError:
