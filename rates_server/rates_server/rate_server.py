@@ -29,6 +29,8 @@ RATESAPP_CONN_OPTIONS = [
 
 RATESAPP_CONN_STRING = ";".join(RATESAPP_CONN_OPTIONS)
 
+log_client_event_lock = threading.RLock()
+
 CLIENT_COMMAND_PARTS = [
     r"^(?P<name>[A-Z]*) ",
     r"(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2}) ",
@@ -187,7 +189,6 @@ def rate_server(host: str, port: int, client_count: Synchronized) -> None:
                 client_count.value += 1
                 log_client_event(client_con_thread.ident, addr[0], addr[1], "connect")
 
-log_client_event_lock = threading.RLock()
 
 def log_client_event(thread_id: Optional[int], host: str, port: int, msg: str) -> None:
 
