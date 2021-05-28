@@ -38,32 +38,12 @@ CLIENT_COMMAND_PARTS = [
 CLIENT_COMMAND_REGEX = re.compile("".join(CLIENT_COMMAND_PARTS))
 
 
-# def get_rate_from_api(closing_date: date, currency_symbol: str,
-#                       currency_rates: list[tuple[date, str, Decimal]]) -> None:
-#     """ get rate from api """
-
-#     url = "".join([
-#         "https://api.ratesapi.io/api/",
-#         closing_date.strftime("%Y-%m-%d"),
-#         "?base=USD&symbols=",
-#         currency_symbol,
-#     ])
-
-#     response = requests.request("GET", url)
-
-#     rate_data = json.loads(response.text)
-
-#     currency_rates.append(
-#         (closing_date,
-#          currency_symbol,
-#          Decimal(str(rate_data["rates"][currency_symbol]))))
-
 def get_rate_from_api(
     closing_date: date, currency_symbol: str) -> tuple[date, str, Decimal]:
     """ get rate from api """
 
     url = "".join([
-        "https://api.ratesapi.io/api/",
+        "http://127.0.0.1:5000/api/",
         closing_date.strftime("%Y-%m-%d"),
         "?base=USD&symbols=",
         currency_symbol,
@@ -157,22 +137,6 @@ class ClientConnectionThread(threading.Thread):
                         exchange_rate = str(rate.exchangerate)
                         rate_responses.append(
                             f"{rate.currencysymbol}: {exchange_rate}")
-
-                # currency_rates: list[tuple[date, str, Decimal]] = []
-                
-                # currency_rate_threads: list[threading.Thread] = []
-                # for currency_symbol in currency_symbols:
-                #     if currency_symbol not in cached_currency_symbols:
-
-                #         currency_rate_thread = threading.Thread(
-                #             target=get_rate_from_api,
-                #             args=(closing_date,
-                #                   currency_symbol, currency_rates))
-
-                #         currency_rate_thread.start()
-                #         currency_rate_threads.append(currency_rate_thread)
-                # for currency_rate_thread in currency_rate_threads:
-                #     currency_rate_thread.join()
 
                 with ThreadPoolExecutor() as executor:
                     currency_rates: list[tuple[date, str, Decimal]] = list(executor.map(

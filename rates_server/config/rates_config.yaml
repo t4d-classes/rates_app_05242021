@@ -1,8 +1,8 @@
 server:
   host: 127.0.0.1
-  port: 5000
+  port: 5050
 database:
-  server: localhost\SQLExpress
+  server: 127.0.0.1,1433
   database: ratesapp
   username: sa
-  password: sqldbpass
+  password: sqlDbp@ss!
